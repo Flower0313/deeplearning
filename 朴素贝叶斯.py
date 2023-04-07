@@ -1,90 +1,65 @@
-# -*- coding: UTF-8 -*-
 import numpy as np
-from functools import reduce
+import openpyxl
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics import accuracy_score
+from sklearn.naive_bayes import MultinomialNB, ComplementNB
+from sklearn.model_selection import train_test_split
 
 
-def loadDataSet():
-    postingList = [['my', 'dog', 'has', 'flea', 'problems', 'help', 'please'],  # 切分的词条
-                   ['maybe', 'not', 'take', 'him', 'to', 'dog', 'park', 'stupid'],
-                   ['my', 'dalmation', 'is', 'so', 'cute', 'I', 'love', 'him'],
-                   ['stop', 'posting', 'stupid', 'worthless', 'garbage'],
-                   ['mr', 'licks', 'ate', 'my', 'steak', 'how', 'to', 'stop', 'him'],
-                   ['quit', 'buying', 'worthless', 'dog', 'food', 'stupid']]
-    classVec = [0, 1, 0, 1, 0, 1]  # 类别标签向量，1代表侮辱性词汇，0代表不是
-    return postingList, classVec  # 返回实验样本切分的词条和类别标签向量
+class Dataset:
+    def __init__(self, data):
+        self.len = data.shape[0]
+        self.x_data = data[:5350, :-1]
+        # self.y_data = data[:5350, [-1]]
+        self.x_test = data[5350:, :-1]
+        # self.y_test = data[5350:, [-1]]
+        self.y_labels = np.reshape(data[:5350, [-1]], (1, 5350))[0]
+        self.y_labels_test = np.reshape(data[5350:, [-1]], (1, 14))[0]
 
 
-def createVocabList(dataSet):
-    vocabSet = set([])  # 创建一个空的不重复列表,去重
-    for document in dataSet:
-        vocabSet = vocabSet | set(document)  # 取并集
-    return list(vocabSet)
+def createData():
+    wb = openpyxl.load_workbook(r'T:\deeplearning\train\bayes.xlsx')
+    sheet = wb.get_sheet_by_name("Sheet1")
+    result = np.empty((0, 6), dtype=float)
+    # 遍历excel
+    # 要使用python package,不然没有权限访问文件夹
+    for i in range(2, sheet.max_row + 1):  #
+        # 课堂
+        lesson = sheet.cell(row=i, column=1)
+        status = sheet.cell(row=i, column=2)
+        status2 = sheet.cell(row=i, column=3)
+        # status3 = sheet.cell(row=i, column=4)
+        status4 = sheet.cell(row=i, column=5)
+        status5 = sheet.cell(row=i, column=6)
+        status6 = sheet.cell(row=i, column=7)
+
+        data = str(lesson.value).split(',')
+        data.append(status.value)
+        data.append(status2.value)
+        # data.append(status3.value)
+        data.append(status4.value)
+        data.append(status5.value)
+        data.append(status6.value)
+        data = np.array(data).reshape(1, len(data))
+        result = np.concatenate([result, data], axis=0)
+    return result
 
 
-def setOfWords2Vec(vocabList, inputSet):
-    # vocabList为关键字列表
-    returnVec = [0] * len(vocabList)  # 创建一个其中所含元素都为0的向量
-    for word in inputSet:  # 遍历每个词条
-        if word in vocabList:  # 如果词条存在于词汇表中，则置1
-            returnVec[vocabList.index(word)] = 1
-        else:
-            print("the word: %s is not in my Vocabulary!" % word)
-    return returnVec  # 返回文档向量
-
-
-def trainNB0(trainMatrix, trainCategory):
-    numTrainDocs = len(trainMatrix)  # 计算训练的文档数目
-    numWords = len(trainMatrix[0])  # 计算每篇文档的词条数
-    pAbusive = sum(trainCategory) / float(numTrainDocs)  # 文档属于侮辱类的概率
-    p0Num = np.ones(numWords)
-    p1Num = np.ones(numWords)  # 创建numpy.ones数组,词条出现数初始化为1，拉普拉斯平滑
-    p0Denom = 2.0
-    p1Denom = 2.0  # 分母初始化为2,拉普拉斯平滑
-    for i in range(numTrainDocs):
-        if trainCategory[i] == 1:  # 统计属于侮辱类的条件概率所需的数据，即P(w0|1),P(w1|1),P(w2|1)···
-            p1Num += trainMatrix[i]
-            p1Denom += sum(trainMatrix[i])
-        else:  # 统计属于非侮辱类的条件概率所需的数据，即P(w0|0),P(w1|0),P(w2|0)···
-            p0Num += trainMatrix[i]
-            p0Denom += sum(trainMatrix[i])
-    p1Vect = np.log(p1Num / p1Denom)  # 取对数，防止下溢出
-    p0Vect = np.log(p0Num / p0Denom)
-    return p0Vect, p1Vect, pAbusive
-
-
-def classifyNB(vec2Classify, p0Vec, p1Vec, pClass1):
-    # vec2Classify是待验证的数据
-    p1 = reduce(lambda x, y: x * y, vec2Classify * p1Vec) * pClass1
-    p0 = reduce(lambda x, y: x * y, vec2Classify * p0Vec) * (1.0 - pClass1)
-    print('p0:', p0)
-    print('p1:', p1)
-    if p1 > p0:
-        return 1
-    else:
-        return 0
-
-
-def testingNB():
-    listOPosts, listClasses = loadDataSet()  # 创建实验样本
-    myVocabList = createVocabList(listOPosts)  # 创建词汇表
-    trainMat = []
-    for postinDoc in listOPosts:
-        trainMat.append(setOfWords2Vec(myVocabList, postinDoc))  # 将实验样本向量化
-    p0V, p1V, pAb = trainNB0(np.array(trainMat), np.array(listClasses))  # 训练朴素贝叶斯分类器
-    testEntry = ['love', 'my', 'dalmation', 'dalmation', 'dalmation']  # 测试样本1
-    thisDoc = np.array(setOfWords2Vec(myVocabList, testEntry))  # 测试样本向量化
-    if classifyNB(thisDoc, p0V, p1V, pAb):
-        print(testEntry, '属于侮辱类')  # 执行分类并打印分类结果
-    else:
-        print(testEntry, '属于非侮辱类')  # 执行分类并打印分类结果
-    testEntry = ['stupid', 'garbage']  # 测试样本2
-
-    thisDoc = np.array(setOfWords2Vec(myVocabList, testEntry))  # 测试样本向量化
-    if classifyNB(thisDoc, p0V, p1V, pAb):
-        print(testEntry, '属于侮辱类')  # 执行分类并打印分类结果
-    else:
-        print(testEntry, '属于非侮辱类')  # 执行分类并打印分类结果
-
-
+# print(dataSet.y_labels)
 if __name__ == '__main__':
-    testingNB()
+    dataSet = Dataset(createData())
+
+    # 创建朴素贝叶斯分类器
+    clf = MultinomialNB()
+
+    # 使用数据训练分类器
+    clf.fit(dataSet.x_data, dataSet.y_labels)
+
+    # 使用分类器进行预测
+    y_pred = clf.predict(dataSet.x_test)
+
+    # 打印出每种可能的概率
+    # proba = clf.predict_proba(dataSet.x_test)
+
+    print("推荐结果：", y_pred)
+    print("实际结果：", dataSet.y_labels_test)

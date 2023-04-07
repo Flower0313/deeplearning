@@ -2,10 +2,6 @@ import operator
 import torch
 import numpy as np
 import pandas as pd
-from torchvision import transforms
-from tensorboard.notebook import display
-from torch.utils.data import Dataset, DataLoader
-from torch.utils.data.dataset import T_co
 
 # 取消numpy科学计数法
 np.set_printoptions(suppress=True)
