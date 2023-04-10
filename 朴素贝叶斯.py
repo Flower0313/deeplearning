@@ -4,23 +4,24 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import accuracy_score
 from sklearn.naive_bayes import MultinomialNB, ComplementNB
 from sklearn.model_selection import train_test_split
-
+# 取消numpy科学计数法
+np.set_printoptions(suppress=True)
 
 class Dataset:
     def __init__(self, data):
         self.len = data.shape[0]
-        self.x_data = data[:5350, :-1]
+        self.x_data = data[:5180, :-1]
         # self.y_data = data[:5350, [-1]]
-        self.x_test = data[5350:, :-1]
+        self.x_test = data[5180:, :-1]
         # self.y_test = data[5350:, [-1]]
-        self.y_labels = np.reshape(data[:5350, [-1]], (1, 5350))[0]
-        self.y_labels_test = np.reshape(data[5350:, [-1]], (1, 14))[0]
+        self.y_labels = np.reshape(data[:5180, [-1]], (1, 5180))[0]
+        self.y_labels_test = np.reshape(data[5180:, [-1]], (1, 10))[0]
 
 
 def createData():
     wb = openpyxl.load_workbook(r'T:\deeplearning\train\bayes.xlsx')
     sheet = wb.get_sheet_by_name("Sheet1")
-    result = np.empty((0, 6), dtype=float)
+    result = np.empty((0, 7), dtype=float)
     # 遍历excel
     # 要使用python package,不然没有权限访问文件夹
     for i in range(2, sheet.max_row + 1):  #
@@ -28,7 +29,7 @@ def createData():
         lesson = sheet.cell(row=i, column=1)
         status = sheet.cell(row=i, column=2)
         status2 = sheet.cell(row=i, column=3)
-        # status3 = sheet.cell(row=i, column=4)
+        status3 = sheet.cell(row=i, column=4)
         status4 = sheet.cell(row=i, column=5)
         status5 = sheet.cell(row=i, column=6)
         status6 = sheet.cell(row=i, column=7)
@@ -36,7 +37,7 @@ def createData():
         data = str(lesson.value).split(',')
         data.append(status.value)
         data.append(status2.value)
-        # data.append(status3.value)
+        data.append(status3.value)
         data.append(status4.value)
         data.append(status5.value)
         data.append(status6.value)
@@ -59,7 +60,7 @@ if __name__ == '__main__':
     y_pred = clf.predict(dataSet.x_test)
 
     # 打印出每种可能的概率
-    # proba = clf.predict_proba(dataSet.x_test)
-
+    proba = clf.predict_proba(dataSet.x_test)
+    print("概率：", np.round(proba * 100, 3))
     print("推荐结果：", y_pred)
     print("实际结果：", dataSet.y_labels_test)
