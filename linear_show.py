@@ -25,18 +25,25 @@ def draw(w, b):
 model = LinearModel()
 
 if __name__ == '__main__':
-    x_data = torch.Tensor([[1.0], [2.0], [3.0]])
-    y_data = torch.Tensor([[2.0], [4.0], [6.0]])
+    x_data = torch.Tensor([[331.0], [333.0], [334.0]])
+    y_data = torch.Tensor([[662.0], [666.0], [668.0]])
 
     criterion = torch.nn.MSELoss(size_average=False)
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
 
     for epoch in range(50):
         y_pred = model(x_data)
         loss = criterion(y_pred, y_data)
-        print(model.linear.weight.item())
+        # print(model.linear.weight.item(),model.linear.bias.item())
+        # 损失值： (y_pred - y_data).pow(2).sum()
+        # 梯度下降：model.linear.weight.item() - ((y_pred - dataSet.y_data) * dataSet.x_data).sum() * 2 / 3 * 0.1
+        print("w=", model.linear.weight.item())
+        # print("b=", model.linear.bias.item())
+        print("y_pred=", y_pred)
+        print("main=", ((y_pred - y_data) * x_data).sum())
+        # print(model.linear.weight.item() - ((y_pred - y_data) * x_data).sum() * 2 * 0.1)
         # print("loss:", loss.item())
-        draw(model.linear.weight.item(), model.linear.bias.item())
+        # draw(model.linear.weight.item(), model.linear.bias.item())
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()

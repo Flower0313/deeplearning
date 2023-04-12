@@ -10,13 +10,13 @@ from torch.utils.data import Dataset
 class BinaryClassificationModel(nn.Module):
     def __init__(self):
         super(BinaryClassificationModel, self).__init__()
-        self.layer1 = nn.Linear(2, 16)
-        self.layer2 = nn.Linear(16, 1)
+        self.layer1 = nn.Linear(2, 1)
+        # self.layer2 = nn.Linear(16, 1)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         x = self.layer1(x)
-        x = self.layer2(x)
+        # x = self.layer2(x)
         x = self.sigmoid(x)
         return x
 
@@ -72,8 +72,8 @@ if __name__ == '__main__':
         loss.backward()
         optimizer.step()
 
-    w = model.state_dict()['layer2.weight']
-    b = model.state_dict()['layer2.bias']
+    w = model.state_dict()['layer1.weight']
+    b = model.state_dict()['layer1.bias']
     x1 = torch.linspace(-1, 5, 500)
     plt.xlabel('sales amount')
     plt.ylabel('arrange')
