@@ -41,8 +41,9 @@ def main():
         # 图片
         if message.photo:
             # 保存图片
-            path = message.download_media(file=r'T:\deeplearning\imgs\\'+str(message.id)+'.jpg')
-            print(message.message, '\n --------------------')
+            path = message.download_media(
+                file=r'T:\deeplearning\imgs\\' + str(message.id) + '-' + str(message.grouped_id) + '.jpg')
+            print(message.id, message.grouped_id, message.text, '\n --------------------')
         # 文本
         elif message.text:
             msg = '聊天ID:' + str(message.id) \
