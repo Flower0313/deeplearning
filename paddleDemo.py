@@ -1,102 +1,88 @@
+import math
 import numpy as np
-import paddle
-import pymysql
-import pandas as pd
+import openpyxl
+import torch
+import matplotlib.pyplot as plt
+from torch import nn
+from torch.utils.data import Dataset
+import torch.nn.functional as F
+from torch.utils.tensorboard import SummaryWriter
 
-class Runner(object):
-    def __init__(self, model, optimizer, loss_fn, metric):
-        # 自定义属性
-        self.model = model  # 模型
-        self.optimizer = optimizer  # 优化器
-        self.loss_fn = loss_fn  # 损失函数
-        self.metric = metric  # 评估指标
-
-        # 模型训练
-        def train(self, train_dataset, dev_dataset=None, **kwargs):
-            pass
-
-        # 模型评价
-        def evaluate(self, data_set, **kwargs):
-            pass
-
-        # 模型预测
-        def predict(self, x, **kwargs):
-            pass
-
-        # 模型保存
-        def save_model(self, save_path):
-            pass
-
-        # 模型加载
-        def load_model(self, model_path):
-            pass
+np.set_printoptions(suppress=True, precision=3)
 
 
-# 划分数据集
-def train_test_split(X, y, train_percent=0.8):
-    n = len(X)
-    shuffled_indices = paddle.randperm(n)  # 返回一个数值在0到n-1、随机排列的1-D Tensor
-    train_set_size = int(n * train_percent)
-    train_indices = shuffled_indices[:train_set_size]
-    test_indices = shuffled_indices[train_set_size:]
+class StuDataset(Dataset):
+    def __init__(self, data):
+        self.x_data = torch.from_numpy(normalize(data[:, :-1])).to(torch.float32)
+        self.y_data = torch.from_numpy(data[:, [-1]]).to(torch.float32)
 
-    X = X.values
-    y = y.values
+    def __getitem__(self, index):
+        return self.x_data[index], self.y_data[index]
 
-    X_train = X[train_indices]
-    y_train = y[train_indices]
-
-    X_test = X[test_indices]
-    y_test = y[test_indices]
-
-    X_min = paddle.min(X_train, axis=0)
-    X_max = paddle.max(X_train, axis=0)
-
-    X_train = (X_train - X_min) / (X_max - X_min)
-    X_test = (X_test - X_min) / (X_max - X_min)
-
-    return X_train, X_test, y_train, y_test
+    def __len__(self):
+        return self.len
 
 
-def dataHandle(data):
-    num_features = data.select_dtypes(exclude=['object', 'bool']).columns.tolist()
+class Model(nn.Module):
+    def __init__(self):
+        super(Model, self).__init__()
+        self.layer1 = nn.Linear(7, 16)
+        self.layer2 = nn.Linear(16, 50)
+        self.layer3 = nn.Linear(50, 1)
 
-    for feature in num_features:
-        print(feature)
-        # 每次进来都能取一列数据
-        if feature == 'CHAS':
-            continue
+    def forward(self, x):
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        # out = F.softmax(x, dim=1)
+        return x
 
-        Q1 = data[feature].quantile(q=0.25)  # 下四分位
-        Q3 = data[feature].quantile(q=0.75)  # 上四分位
 
-        IQR = Q3 - Q1
-        top = Q3 + 1.5 * IQR  # 最大估计值
-        bot = Q1 - 1.5 * IQR  # 最小估计值
-        values = data[feature].values
-        values[values > top] = top  # 临界值取代噪声
-        values[values < bot] = bot  # 临界值取代噪声
-        data[feature] = values.astype(data[feature].dtypes)
-        return data
+def normalize(array):
+    # 计算均值
+    means = np.mean(array, axis=0)
+    # 计算标准差
+    stds = np.std(array, axis=0)
+    return (array - means) / stds
 
+
+wb = openpyxl.load_workbook(r'T:\deeplearning\train\xkl.xlsx')
+sheet = wb.get_sheet_by_name("Sheet1")
+result = np.empty((0, 8), dtype=float)
+# 遍历excel
+# 要使用python package,不然没有权限访问文件夹
+for i in range(2, sheet.max_row + 1):  #
+    # 课堂
+    lesson = sheet.cell(row=i, column=1)
+    status = sheet.cell(row=i, column=2)
+    status2 = sheet.cell(row=i, column=3)
+    status3 = sheet.cell(row=i, column=4)
+    status4 = sheet.cell(row=i, column=5)
+    status5 = sheet.cell(row=i, column=6)
+    status6 = sheet.cell(row=i, column=7)
+    status7 = sheet.cell(row=i, column=8)
+
+    data = str(lesson.value).split(',')
+    data.append(status.value)
+    data.append(status2.value)
+    data.append(status3.value)
+    data.append(status4.value)
+    data.append(status5.value)
+    data.append(status6.value)
+    data.append(status7.value)
+    data = np.array(data).reshape(1, len(data)).astype(np.float)
+    result = np.concatenate([result, data], axis=0)
 
 if __name__ == '__main__':
-    data = pd.read_csv("T:/deeplearning/boston_house_prices.csv")
-    # 用isna()来判断数据中各元素是否缺失
-    x = data.isna().sum()
-
-    ## 处理异常数据，减少噪声
-#
-    ## 四分位处理异常值
-    data = dataHandle(data)
-#
-    ## 划分数据集 && 归一化
-    #X = data.drop(['MEDV'], axis=1)
-    #y = data['MEDV']
-    #X_train, X_test, y_train, y_test = train_test_split(X, y)  # X_train每一行是个样本，shape[N,D]
-#
-    #train_dataset = (X_train, y_train)
-    ## 测试集构造
-    #test_dataset = (X_test, y_test)
-
-
+    print(result.shape)
+    dataSet = StuDataset(result)
+    model = Model()
+    criterion = torch.nn.MSELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.1, weight_decay=1e-2)
+    for epoch in range(500):
+        y_pred = model(dataSet.x_data)
+        loss = criterion(y_pred, dataSet.y_data)
+        print("loss", loss.item())
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()

@@ -33,16 +33,23 @@ def main():
     client.start()
 
     # 指定要下载数据的频道链接
-    channel_link = 'https://t.me/testdemo003'  # https://t.me/+CuRuJByI1uxmYTRl
+    channel_link = 'https://t.me/testdemo003'  # 'https://t.me/shanghaierlang1'
     # 下载频道消息
     # 频道名称：str(utils.get_display_name(message.sender))
-    messages = client.iter_messages(channel_link, min_id=1, max_id=10)
+    messages = client.iter_messages(channel_link, min_id=1, max_id=100)
     for message in messages:
-        msg = '聊天ID:' + str(message.id) \
-              + '\n时间:' + str(message.date) \
-              + '\n文本消息:[' + str(message.message) + ']' \
-              + '\n--------------------'
-        print(msg)
+        # 图片
+        if message.photo:
+            # 保存图片
+            path = message.download_media(file=r'T:\deeplearning\imgs\\'+str(message.id)+'.jpg')
+            print(message.message, '\n --------------------')
+        # 文本
+        elif message.text:
+            msg = '聊天ID:' + str(message.id) \
+                  + '\n时间:' + str(message.date) \
+                  + '\n文本消息:[' + str(message.message) + ']' \
+                  + '\n--------------------'
+            print(msg)
 
 
 with client:

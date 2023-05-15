@@ -22,7 +22,8 @@ class BinaryClassificationModel(nn.Module):
 
 
 def decision_boundary(w, b, x1):
-    print(w.numpy())
+    print('w:', w.numpy())
+    # 使用w1x1+w2x2=0来作为决策边界
     x2 = (- w.numpy()[0][0] * x1) / w.numpy()[0][1]
     return x2
 
