@@ -1,6 +1,9 @@
+import asyncio
+
 from telethon.sync import TelegramClient
 from telethon import utils
 from telethon import types
+from telethon.tl.types import MessageMediaDocument
 
 api_id = 22434812
 api_hash = '878956832216ec65fd5f9814483b02d9'
@@ -28,7 +31,7 @@ client = TelegramClient('fucker', api_id, api_hash, proxy=proxy)
 # with client:
 #     client.loop.run_until_complete(main())
 
-
+# 如果有grouped_id就以这个为主，grouped_id为None就以id为主
 def main():
     client.start()
 
@@ -38,20 +41,31 @@ def main():
     # 频道名称：str(utils.get_display_name(message.sender))
     messages = client.iter_messages(channel_link, min_id=1, max_id=100)
     for message in messages:
+        # client.download_media(message.media,'T:\deeplearning\imgs')
+        media = message.media
         # 图片
         if message.photo:
             # 保存图片
-            path = message.download_media(
+            message.download_media(
                 file=r'T:\deeplearning\imgs\\' + str(message.id) + '-' + str(message.grouped_id) + '.jpg')
-            print(message.id, message.grouped_id, message.text, '\n --------------------')
+            if str(message.message) != '' and message.message is not None:
+                print('聊天ID:' + str(message.id) + '-' + str(message.grouped_id) +
+                      '\n文本消息:' + str(message.message) + '\n --------------------')
+
         # 文本
         elif message.text:
-            msg = '聊天ID:' + str(message.id) \
-                  + '\n时间:' + str(message.date) \
-                  + '\n文本消息:[' + str(message.message) + ']' \
-                  + '\n--------------------'
+            msg = '聊天ID:' + str(message.id) + '-' + str(message.grouped_id) \
+                  + '\n文本消息:' + str(message.message) + '\n--------------------'
             print(msg)
+            # 视频
+            if media is not None and isinstance(media, MessageMediaDocument) and media.document.mime_type.startswith(
+                    'video/'):
+                message.download_media(
+                    file=r'T:\deeplearning\imgs\\' + str(message.id) + '-' + str(message.grouped_id) + '.MP4')
 
 
 with client:
-    main()
+    try:
+        main()
+    except asyncio.CancelledError:
+        print("任务被取消")
