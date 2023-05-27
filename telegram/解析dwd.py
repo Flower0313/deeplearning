@@ -3,10 +3,10 @@ import re
 import pymysql
 
 conn = pymysql.connect(
-    host='127.0.0.1',
+    host='8.130.49.69',
     port=3306,
     user='root',
-    passwd='root',
+    passwd='w654646',
     charset='utf8mb4'
 )
 cursor = conn.cursor()
@@ -29,7 +29,7 @@ insert into spider_base.`dwd_building_phoenix`(channel_id,message_id,group_id,pr
 
 cursor.execute(sql)
 content = cursor.fetchall()
-qq = r"(?<=[q|Q|Qq|qq|QQ]{1}[:：]{1}?).+\d+"
+qq = r"(?<=[q|Q|Qq|qq|QQ].{1}[:：]{1}?).+\d+"
 tel = r"(?<!\d)(?:1[3456789]\d{9})(?!\d)"
 wx = r"(?<=([微信|wx|v|V|微|vx|VX|Vx|Wx|WX]{1}[:：]{1})).+[\w\-\_]{6,20}"
 

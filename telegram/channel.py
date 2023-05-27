@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import re
 
 import pymysql
 from telethon.sync import TelegramClient
@@ -16,10 +17,10 @@ proxy = {
 }
 
 conn = pymysql.connect(
-    host='127.0.0.1',
+    host='8.130.49.69',
     port=3306,
     user='root',
-    passwd='root',
+    passwd='w654646',
     charset='utf8mb4'
 )
 cursor = conn.cursor()
@@ -35,20 +36,20 @@ client = TelegramClient('fucker', api_id, api_hash, proxy=proxy)
 def main():
     client.start()
     # 频道实体
-    entity = client.get_entity(Channel(id=1708774228, title='上海楼凤258会员资源公开群',
-                                       photo=ChatPhoto(photo_id=6316579454603865794, dc_id=5, has_video=False,
+    entity = client.get_entity(Channel(id=1552083977, title='上海已验证资源（长三角群）',
+                                       photo=ChatPhoto(photo_id=6262654211762269595, dc_id=5, has_video=False,
                                                        stripped_thumb=''),
-                                       date=datetime.datetime(2023, 5, 17, 4, 32, 28, tzinfo=datetime.timezone.utc),
+                                       date=datetime.datetime(2023, 4, 12, 10, 34, 37, tzinfo=datetime.timezone.utc),
                                        creator=False, left=False, broadcast=True, verified=False, megagroup=False,
                                        restricted=False, signatures=False, min=False, scam=False, has_link=False,
                                        has_geo=False, slowmode_enabled=False, call_active=False, call_not_empty=False,
-                                       fake=False, gigagroup=False, noforwards=True, join_to_send=False,
-                                       join_request=False, forum=False, access_hash=6462052031532083778, username=None,
+                                       fake=False, gigagroup=False, noforwards=False, join_to_send=False,
+                                       join_request=False, forum=False, access_hash=2422350542710402032, username=None,
                                        restriction_reason=[], admin_rights=None, banned_rights=None,
-                                       default_banned_rights=None, participants_count=281, usernames=[]))
+                                       default_banned_rights=None, participants_count=2832, usernames=[]))
 
     # 获取频道的消息
-    messages = client.iter_messages(entity, min_id=1)
+    messages = client.iter_messages(entity, min_id=1, max_id=100)
 
     for message in messages:
         # 获取媒体对象
@@ -59,14 +60,14 @@ def main():
             message.download_media(
                 file=r'T:\deeplearning\imgs\\' + str(message.peer_id.channel_id) + '-' + str(message.id) + '-' + str(
                     0 if message.grouped_id is None else message.grouped_id) + '.jpg')
-            if str(message.message) != '' and message.message is not None:
+            if str(message.message) != '' and message.message is not None and re.search(r"(?<=S)\d{1,6}",
+                                                                                        message.message):
                 group_id = 0 if message.grouped_id is None else str(message.grouped_id)
                 e_sql = base_sql_zero_kline.format(str(utils.get_display_name(message.sender)),
                                                    str(message.peer_id.channel_id), str(message.id), group_id,
                                                    str(message.message))
-                print(e_sql)
-                # cursor.execute(e_sql)
-                # conn.commit()
+                cursor.execute(e_sql)
+                conn.commit()
         # 文本
         elif message.text:
             msg = '聊天ID:' + str(message.peer_id.channel_id) + '-' + str(message.id) + '-' + str(message.grouped_id) \
@@ -75,7 +76,7 @@ def main():
             e_sql = base_sql_zero_kline.format(str(utils.get_display_name(message.sender)),
                                                str(message.peer_id.channel_id), str(message.id), group_id,
                                                str(message.message))
-            #print(e_sql)
+            # print(e_sql)
             # cursor.execute(e_sql)
             # conn.commit()
 
