@@ -17,10 +17,10 @@ proxy = {
 }
 
 conn = pymysql.connect(
-    host='8.130.49.69',
+    host='127.0.0.1',
     port=3306,
     user='root',
-    passwd='w654646',
+    passwd='root',
     charset='utf8mb4'
 )
 cursor = conn.cursor()
