@@ -1,12 +1,9 @@
 import asyncio
 import datetime
-import re
-
 import pymysql
 from telethon.sync import TelegramClient
 from telethon import utils
-from telethon import types
-from telethon.tl.types import MessageMediaDocument, Channel, ChatPhoto
+from telethon.tl.types import Channel, ChatPhoto
 
 api_id = 22434812
 api_hash = '878956832216ec65fd5f9814483b02d9'
@@ -57,10 +54,11 @@ def main():
         # 图片
         if message.photo:
             # 保存图片 频道-消息-组
-            # message.download_media(
-            #     file=r'T:\deeplearning\imgs\\' + str(message.peer_id.channel_id) + '-' + str(message.id) + '-' + str(
-            #         0 if message.grouped_id is None else message.grouped_id) + '.jpg')
             if str(message.message) != '' and message.message is not None and "已下架" not in str(message.message) and "SPA" not in str(message.message) and str(message.message).__contains__("@"):
+                message.download_media(
+                    file=r'T:\deeplearning\imgs\\' + str(message.peer_id.channel_id) + '-' + str(
+                        message.id) + '-' + str(
+                        0 if message.grouped_id is None else message.grouped_id) + '.jpg')
                 group_id = 0 if message.grouped_id is None else str(message.grouped_id)
                 e_sql = base_sql_zero_kline.format(str(utils.get_display_name(message.sender)),
                                                    str(message.peer_id.channel_id), str(message.id), group_id,

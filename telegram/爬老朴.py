@@ -34,7 +34,8 @@ client = TelegramClient('fucker', api_id, api_hash, proxy=proxy)
 qq = r"(?<=[q|Q|Qq|qq|QQ].{1}[:：]{1}?).+\d+"
 tel = r"(?<!\d)(?:1[3456789]\d{9})(?!\d)"
 wx = r"(?<=([微信|wx|v|V|微|vx|VX|Vx|Wx|WX]{1}[:：]{1})).+[\w\-\_]{6,20}"
-tele = r"@[a-zA-Z0-9_]*"
+tele = r"(?<=@)[a-zA-Z0-9_]*"
+contact = r"(?<=联系方式[:：]{1})[a-zA-Z0-9_|，]+"
 
 
 # 如果有grouped_id就以这个为主，grouped_id为None就以id为主
@@ -62,10 +63,13 @@ def main():
         # 图片
         if message.photo:
             # 保存图片 频道-消息-组
-            # message.download_media(
-            #     file=r'T:\deeplearning\imgs\\' + str(message.peer_id.channel_id) + '-' + str(message.id) + '-' + str(
-            #         0 if message.grouped_id is None else message.grouped_id) + '.jpg')
-            if str(message.message) != '' and message.message is not None and re.search(qq + '|' + tel + '|' + wx + '|' + tele, message.message):
+
+            if str(message.message) != '' and message.message is not None and re.search(
+                    qq + '|' + tel + '|' + wx + '|' + tele + '|' + contact, message.message) and "xbuding1" not in str(message.message):
+                message.download_media(
+                    file=r'T:\deeplearning\imgs\\' + str(message.peer_id.channel_id) + '-' + str(
+                        message.id) + '-' + str(
+                        0 if message.grouped_id is None else message.grouped_id) + '.jpg')
                 group_id = 0 if message.grouped_id is None else str(message.grouped_id)
                 e_sql = base_sql_zero_kline.format(str(utils.get_display_name(message.sender)),
                                                    str(message.peer_id.channel_id), str(message.id), group_id,

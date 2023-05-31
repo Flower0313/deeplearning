@@ -58,11 +58,13 @@ def main():
         # 图片
         if message.photo:
             # 保存图片 频道-消息-组
-            # message.download_media(
-            #     file=r'T:\deeplearning\imgs\\' + str(message.peer_id.channel_id) + '-' + str(message.id) + '-' + str(
-            #         0 if message.grouped_id is None else message.grouped_id) + '.jpg')
+
             if str(message.message) != '' and message.message is not None and re.search(r"\d{6,8}",
                                                                                         message.message) and str(message.message).__contains__("@"):
+                message.download_media(
+                    file=r'T:\deeplearning\imgs\\' + str(message.peer_id.channel_id) + '-' + str(
+                        message.id) + '-' + str(
+                        0 if message.grouped_id is None else message.grouped_id) + '.jpg')
                 group_id = 0 if message.grouped_id is None else str(message.grouped_id)
                 e_sql = base_sql_zero_kline.format(str(utils.get_display_name(message.sender)),
                                                    str(message.peer_id.channel_id), str(message.id), group_id,

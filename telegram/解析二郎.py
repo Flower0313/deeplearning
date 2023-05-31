@@ -31,9 +31,10 @@ cursor.execute(sql)
 content = cursor.fetchall()
 qq = r"(?<=[q|Q|Qq|qq|QQ].{1}[:：]{1}?).+\d+"
 tel = r"(?<!\d)(?:1[3456789]\d{9})(?!\d)"
-wx = r"(?<=([微信|wx|v|V|微|vx|VX|Vx|Wx|WX]{1}[:：]{1})).+[\w\-\_]{6,20}"
+wx = r"(?<=([微信|wx|v|V|微|vx|VX|Vx|Wx|WX]{1}[:：]{1})).+[\w\-\_]{6,20}|\b[a-zA-Z0-9_]{6,20}\b"
+tele = r"@[a-zA-Z0-9_]*"
 
-pattern = re.compile(qq + '|' + tel + '|' + wx)
+pattern = re.compile(qq + '|' + tel + '|' + wx + '|' + tele)
 for i in content:
     # 去除编号
     origin = re.sub(r"S\d*(?=\,).", '', str(i[3]))

@@ -46,11 +46,12 @@ def main():
                                        fake=False, gigagroup=False, noforwards=False, join_to_send=False,
                                        join_request=False, forum=False, access_hash=2698868846736290137,
                                        username='shanghaisaiche', restriction_reason=[], admin_rights=None,
-                                       banned_rights=None, default_banned_rights=None, participants_count=5061,
-                                       usernames=[]))
+                                       banned_rights=None, default_banned_rights=None, participants_count=5062,
+                                       usernames=[])
+                               )
 
     # 获取频道的消息
-    messages = client.iter_messages(entity, min_id=4169)
+    messages = client.iter_messages(entity, min_id=1)
 
     for message in messages:
         # 获取媒体对象
@@ -58,38 +59,18 @@ def main():
         # 图片
         if message.photo:
             # 保存图片 频道-消息-组
-            # message.download_media(
-            #     file=r'T:\deeplearning\imgs\\' + str(message.peer_id.channel_id) + '-' + str(message.id) + '-' + str(
-            #         0 if message.grouped_id is None else message.grouped_id) + '.jpg')
-            if str(message.message) != '' and message.message is not None and re.search(r"(?<=S)\d{1,6}",
-                                                                                        message.message):
+            if str(message.message) != '' and message.message is not None and re.search(r"@[a-zA-Z0-9_]*", message.message) and str(message.message).__contains__("编号"):
+                message.download_media(
+                    file=r'T:\deeplearning\imgs\\' + str(message.peer_id.channel_id) + '-' + str(
+                        message.id) + '-' + str(
+                        0 if message.grouped_id is None else message.grouped_id) + '.jpg')
                 group_id = 0 if message.grouped_id is None else str(message.grouped_id)
                 e_sql = base_sql_zero_kline.format(str(utils.get_display_name(message.sender)),
                                                    str(message.peer_id.channel_id), str(message.id), group_id,
                                                    str(message.message))
-                #cursor.execute(e_sql)
-                #conn.commit()
-        # 文本
-        elif message.text:
-            msg = '聊天ID:' + str(message.peer_id.channel_id) + '-' + str(message.id) + '-' + str(message.grouped_id) \
-                  + '\n文本消息:' + str(message.message) + '\n--------------------'
-            group_id = 0 if message.grouped_id is None else str(message.grouped_id)
-            e_sql = base_sql_zero_kline.format(str(utils.get_display_name(message.sender)),
-                                               str(message.peer_id.channel_id), str(message.id), group_id,
-                                               str(message.message))
-            # print(e_sql)
-            # cursor.execute(e_sql)
-            # conn.commit()
-
-            # 视频
-            if media is not None and isinstance(media, MessageMediaDocument) and media.document.mime_type.startswith(
-                    'video/'):
-                print(1)
-                # message.download_media(
-                #     file=r'T:\deeplearning\imgs\\' + str(message.peer_id.channel_id) + '-' + str(
-                #         message.id) + '-' + str(
-                #         message.grouped_id) + '.MP4')
-
+                # print(e_sql)
+                cursor.execute(e_sql)
+                conn.commit()
 
 with client:
     try:

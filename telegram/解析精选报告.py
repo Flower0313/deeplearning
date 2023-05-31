@@ -32,6 +32,8 @@ content = cursor.fetchall()
 qq = r"(?<=[q|Q|Qq|qq|QQ].{1}[:：]{1}?).+\d+"
 tel = r"(?<!\d)(?:1[3456789]\d{9})(?!\d)"
 wx = r"(?<=([微信|wx|v|V|微|vx|VX|Vx|Wx|WX]{1}[:：]{1})).+[\w\-\_]{6,20}"
+tele = r"@[a-zA-Z0-9_]*"
+contact = r"(?<=联系方式[:：]{1})[a-zA-Z0-9_|，]+"
 
 pattern = re.compile(r"@[a-zA-Z0-9_]*")
 for i in content:

@@ -20,7 +20,7 @@ cursor = conn.cursor()
 # 获取微信：r"(?<=([微信|wx|v|V|微|vx|VX|Vx|Wx|WX]{1}[:：]{1})).+[\w\-\_]{6,20}"
 # 获取水费 ：r"(\d+[张|k|w]{0,1}){1,5}(?=[/|一|p])"
 sql = '''
-SELECT channel_id,message_id,group_id,remark FROM spider_base.`ods_building_phoenix` where channel_id='1647055020'
+SELECT channel_id,message_id,group_id,remark FROM spider_base.`ods_building_phoenix` where channel_id='1401936463'
 '''
 
 insert_sql = '''
@@ -32,25 +32,28 @@ content = cursor.fetchall()
 qq = r"(?<=[q|Q|Qq|qq|QQ].{1}[:：]{1}?).+\d+"
 tel = r"(?<!\d)(?:1[3456789]\d{9})(?!\d)"
 wx = r"(?<=([微信|wx|v|V|微|vx|VX|Vx|Wx|WX]{1}[:：]{1})).+[\w\-\_]{6,20}"
+tele = r"@[a-zA-Z0-9_]*"
+contact = r"(?<=联系方式[:：]{1})[a-zA-Z0-9_|，]+"
 
 pattern = re.compile(r"@[a-zA-Z0-9_]*")
 for i in content:
     # 去除名字
-    origin = re.sub(r"\d{6,8}", '', str(i[3]))
+    origin = re.sub(r"编号：\d+\b|#", '', str(i[3]))
+    origin = re.sub(r"地区：|资料：|标签：", ',', origin)
 
     # 隐藏联系方式(简介)
     result = pattern.sub('已隐藏', origin)
     # 获取身高
-    height = re.findall(r"\b1\d{2}\b", result)
+    height = re.findall(r"(?<=身高)1+\d{2}", result)
     height = 0 if len(height) == 0 else min(int(x) for x in height)
     # 获取年龄
     age = [0]
     # 获取水费
-    money = re.findall(r"\d{1,5}(?=P|p|k|K)", result)
+    money = re.findall(r"\d{1,5}(?=P|p)", result)
     money = 0 if len(money) == 0 else min(int(x) for x in money)
 
     # 获取体重
-    weight = re.findall(r"\b(4|5|6)\d{1}", result)
+    weight = re.findall(r"(?<=体重)\d{2}", result)
     weight = 0 if len(weight) == 0 else min(int(x) for x in weight)
 
     # 获取区域
@@ -69,7 +72,7 @@ for i in content:
     e_sql = insert_sql.format(i[0], i[1], i[2], '上海', '上海市', str(area[0]) + '区', if_sw, if_by, if_door, if_96,
                               str(result), money,
                               origin, 0 if len(age) == 0 else age[0], height, weight)
-    #print(e_sql)
+    # print(e_sql)
     cursor.execute(e_sql)
     conn.commit()
 
